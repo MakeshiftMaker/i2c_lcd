@@ -1,6 +1,8 @@
 #ifndef I2C_LCD_H
 #define I2C_LCD_H
 
+extern int backlight_state;
+
 void lcd_init(int fd);
 void lcd_byte(int fd, int bits, int mode);
 void lcd_toggle_enable(int fd, int bits);

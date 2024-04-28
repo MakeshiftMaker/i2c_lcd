@@ -33,6 +33,8 @@
 
 // #define ENABLE  0b00000100 // Enable bit
 
+int backlight_state = 0x08;
+
 void lcd_init(int fd);
 void lcd_byte(int fd, int bits, int mode);
 void lcd_toggle_enable(int fd, int bits);
@@ -93,8 +95,8 @@ void lcd_byte(int fd, int bits, int mode)   {
   int bits_high;
   int bits_low;
   // uses the two half byte writes to LCD
-  bits_high = mode | (bits & 0xF0);
-  bits_low = mode | ((bits << 4) & 0xF0);
+  bits_high = mode | (bits & 0xF0) | backlight_state;
+  bits_low = mode | ((bits << 4) & 0xF0) | backlight_state;
 
   // High bits
   wiringPiI2CReadReg8(fd, bits_high);
@@ -106,28 +108,12 @@ void lcd_byte(int fd, int bits, int mode)   {
 }
 
 void switchBacklight(int fd, int power){
-  int backlight;
   if(power == 1){
-    backlight = 0x08;
+    backlight_state = 0x08;
   }else{
-    backlight = 0x00;
+    backlight_state = 0x00;
   }
-  //Send byte to data pins
-  // bits = the data
-  // mode = 1 for data, 0 for command
-  int bits_high;
-  int bits_low;
-  // uses the two half byte writes to LCD
-  bits_high = 0 | backlight ;
-  bits_low = 0 | backlight ;
-
-  // High bits
-  wiringPiI2CReadReg8(fd, bits_high);
-  lcd_toggle_enable(fd, bits_high);
-
-  // Low bits
-  wiringPiI2CReadReg8(fd, bits_low);
-  lcd_toggle_enable(fd, bits_low);
+  lcd_byte(fd, 0, 0);
 }
 
 void lcd_toggle_enable(int fd, int bits)   {
